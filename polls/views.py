@@ -24,7 +24,9 @@ def test(request):
 @csrf_exempt
 def uploadCSV(request):
 	print "Inside the upload function"
-	if request.FILES:
+
+	# handling a single file, original code
+	if len(request.FILES.getlist('file')) == 1:
 		csvFile = request.FILES['file']
 		fileName = str(csvFile.name)
 		rowContent = ""
@@ -49,6 +51,14 @@ def uploadCSV(request):
 
 		return HttpResponse(json.dumps(rowContent))
 		# return HttpResponse("Got the CSV file.")
+
+	# handling multiple files
+	elif len(request.FILES.getlist('file')) > 1:
+		rowContent = ""
+		for f_csv in request.FILES.getlist('file'):
+			print str(f_csv.name)
+		return HttpResponse(json.dumps(rowContent))
+
 	else:
 		print "Not found the file!"
 		return HttpResponseNotFound('Page not found for CSV')
