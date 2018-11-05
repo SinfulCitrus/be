@@ -2,6 +2,7 @@ import csv
 import codecs
 from collections import Counter
 
+from tests import ppdict
 from utils import parseCSVFile, testCSVFileFormatMatching, isNumber, parseSubmissionTime
 
 def parseAuthorCSVFile(inputFile):
@@ -23,6 +24,31 @@ def parseAuthorCSVFile(inputFile):
 	parsedResult = {}
 
 	return parsedResult
+
+def getMultipleFilesInfo(file_list): # TODO: parse and join files
+	"""
+	Parses any combination of author.csv, review.csv, submission.csv
+	"""
+	parsedResult = {}
+	u_files = [] # list of uploaded files
+
+	for f_csv in file_list:
+		if str(f_csv.name) == 'author.csv':
+			u_files.append("author")
+
+		elif str(f_csv.name) == 'review.csv':
+			u_files.append("review")
+
+		elif str(f_csv.name) == 'submission.csv':
+			u_files.append("submission")
+
+		else:
+			print "Files dont match a known format."
+
+	dict_result = {'infoType':u_files,'infoData':parsedResult}
+	ppdict(dict_result)
+
+	return dict_result
 
 def getAuthorInfo(inputFile):
 	"""
@@ -54,7 +80,10 @@ def getAuthorInfo(inputFile):
 	topAffiliations = Counter(affiliations).most_common(10)
 	parsedResult['topAffiliations'] = {'labels': [ele[0] for ele in topAffiliations], 'data': [ele[1] for ele in topAffiliations]}
 
-	return {'infoType': 'author', 'infoData': parsedResult}
+	dict_result = {'infoType': 'author', 'infoData': parsedResult}
+	ppdict(dict_result)
+
+	return dict_result
 
 def getReviewScoreInfo(inputFile):
 	"""
@@ -83,7 +112,10 @@ def getReviewScoreInfo(inputFile):
 	parsedResult['meanConfidence'] = sum(confidences) / float(len(confidences))
 	parsedResult['totalReview'] = len(confidences)
 
-	return {'infoType': 'reviewScore', 'infoData': parsedResult}
+	dict_result = {'infoType': 'reviewScore', 'infoData': parsedResult}
+	ppdict(dict_result)
+
+	return dict_result
 
 def getReviewInfo(inputFile):
 	"""
@@ -157,7 +189,10 @@ def getReviewInfo(inputFile):
 	parsedResult['scoreDistribution'] = {'labels': scoreDistributionLabels, 'counts': scoreDistributionCounts}
 	parsedResult['recommendDistribution'] = {'labels': recommendDistributionLabels, 'counts': recommendDistributionCounts}
 
-	return {'infoType': 'review', 'infoData': parsedResult}
+	dict_result = {'infoType': 'review', 'infoData': parsedResult}
+	ppdict(dict_result)
+
+	return dict_result
 
 def getSubmissionInfo(inputFile):
 	"""
@@ -269,7 +304,11 @@ def getSubmissionInfo(inputFile):
 	parsedResult['lastEditSeries'] = lastEditSeries
 	parsedResult['comparableAcceptanceRate'] = comparableAcceptanceRate
 
-	return {'infoType': 'submission', 'infoData': parsedResult}
+	dict_result = {'infoType': 'submission', 'infoData': parsedResult}
+	ppdict(dict_result)
+
+	return dict_result
 
 if __name__ == "__main__":
-	parseCSVFile(fileName)
+	#parseCSVFile(fileName)
+	print "getInsight.main"
