@@ -42,8 +42,14 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework.authtoken',
     'rest_auth',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'rest_auth.registration',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
