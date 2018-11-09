@@ -48,5 +48,5 @@ urlpatterns = [
     url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
 
     url(r'^users/', include('users.urls')),
-    url(r'^rest-auth/registration/', include('rest_auth.registration.urls'))
+    url(r'^users/auth/registration/', include('rest_auth.registration.urls'))
 ]
