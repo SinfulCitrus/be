@@ -38,7 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'rest_framework_swagger',
+    'drf_yasg',
+    'rest_framework.authtoken',
+    'rest_auth',
+    'users.apps.UsersConfig',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'rest_auth.registration',
 ]
 
 MIDDLEWARE = [
@@ -102,6 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Swagger
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
