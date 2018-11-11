@@ -49,7 +49,7 @@ def uploadCSV(request):
 			# csvFile = request.FILES['file']
 			print "Now we got the csv file"
 
-		return HttpResponse(json.dumps(rowContent))
+		return HttpResponse(json.dumps(rowContent[0]))
 		# return HttpResponse("Got the CSV file.")
 
 	# handling multiple files

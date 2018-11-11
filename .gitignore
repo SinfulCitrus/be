@@ -1,2 +1,4 @@
 *.csv
 *.pyc
+dictdump.txt
+.vscode/launch.json

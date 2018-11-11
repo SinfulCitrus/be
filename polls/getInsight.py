@@ -25,30 +25,73 @@ def parseAuthorCSVFile(inputFile):
 
 	return parsedResult
 
-def getMultipleFilesInfo(file_list): # TODO: parse and join files
+def getMultipleFilesInfo(file_list):
 	"""
 	Parses any combination of author.csv, review.csv, submission.csv
 	"""
 	parsedResult = {}
+	parsedFiles = {}
 	u_files = [] # list of uploaded files
-
+	
 	for f_csv in file_list:
 		if str(f_csv.name) == 'author.csv':
-			u_files.append("author")
+			u_files.append('author')
+			parsedResult['author'], parsedFiles['author.csv'] = getAuthorInfo(f_csv)
+			
+		elif str(f_csv.name) == 'score.csv':
+			u_files.append('score')
+			parsedResult['score'], parsedFiles['score.csv'] = getReviewScoreInfo(f_csv)
 
 		elif str(f_csv.name) == 'review.csv':
-			u_files.append("review")
+			u_files.append('review')
+			parsedResult['review'], parsedFiles['review.csv'] = getReviewInfo(f_csv)
 
 		elif str(f_csv.name) == 'submission.csv':
-			u_files.append("submission")
+			u_files.append('submission')
+			parsedResult['submission'], parsedFiles['submission.csv'] = getSubmissionInfo(f_csv)
 
 		else:
 			print "Files dont match a known format."
+			return None
+
+	parsedResult['combined'] = parseCombinedFiles(parsedFiles)
 
 	dict_result = {'infoType':u_files,'infoData':parsedResult}
 	ppdict(dict_result)
-
+	
 	return dict_result
+
+def parseCombinedFiles(parsedFiles):
+
+	parsedResult = {}
+
+	# visualisations for different combinations of files
+	if 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles and 'review.csv' not in parsedFiles:
+		authorList = []
+		submissionList = []
+
+		# collaborators
+		for authorInfo in parsedFiles['author.csv']:
+			authorList.append({'collaborators': authorInfo[0]})
+		collaborators = [ele['collaborators'] for ele in authorList if ele]
+		topCollaborators = Counter(collaborators).most_common(10)
+		parsedResult['topCollaborators'] = {'labels': [ele[0] for ele in topCollaborators], 'data': [ele[1] for ele in topCollaborators]}
+		print "after collab"
+
+	elif 'author.csv' in parsedFiles and 'submission.csv' not in parsedFiles and 'review.csv' in parsedFiles:
+		authorList = []
+		reviewList = []
+
+	elif 'author.csv' not in parsedFiles and 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
+		submissionList = []
+		reviewList = []
+
+	elif 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
+		authorList = []
+		submissionList = []
+		reviewList = []
+	
+	return {'infoType': 'combined', 'infoData': parsedResult}
 
 def getAuthorInfo(inputFile):
 	"""
@@ -66,7 +109,6 @@ def getAuthorInfo(inputFile):
 		# authorInfo = line.replace("\"", "").split(",")
 		# print authorInfo
 		authorList.append({'name': authorInfo[1] + " " + authorInfo[2], 'country': authorInfo[4], 'affiliation': authorInfo[5]})
-	
 
 	authors = [ele['name'] for ele in authorList if ele] # adding in the if ele in case of empty strings; same applies below
 	topAuthors = Counter(authors).most_common(10)
@@ -83,7 +125,7 @@ def getAuthorInfo(inputFile):
 	dict_result = {'infoType': 'author', 'infoData': parsedResult}
 	ppdict(dict_result)
 
-	return dict_result
+	return dict_result, lines
 
 def getReviewScoreInfo(inputFile):
 	"""
@@ -115,7 +157,7 @@ def getReviewScoreInfo(inputFile):
 	dict_result = {'infoType': 'reviewScore', 'infoData': parsedResult}
 	ppdict(dict_result)
 
-	return dict_result
+	return dict_result, lines
 
 def getReviewInfo(inputFile):
 	"""
@@ -192,7 +234,7 @@ def getReviewInfo(inputFile):
 	dict_result = {'infoType': 'review', 'infoData': parsedResult}
 	ppdict(dict_result)
 
-	return dict_result
+	return dict_result, lines
 
 def getSubmissionInfo(inputFile):
 	"""
@@ -307,7 +349,7 @@ def getSubmissionInfo(inputFile):
 	dict_result = {'infoType': 'submission', 'infoData': parsedResult}
 	ppdict(dict_result)
 
-	return dict_result
+	return dict_result, lines
 
 if __name__ == "__main__":
 	#parseCSVFile(fileName)
