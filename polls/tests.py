@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import pprint
 
 from django.test import TestCase
@@ -14,7 +12,7 @@ def ppdict(d_file):
     """
     if not ddebug:
         return
-    print "Dumping " + str(d_file.get('infoType')) + " to dictdump.txt"
+    print("Dumping " + str(d_file.get('infoType')) + " to dictdump.txt")
     f = open("dictdump.txt","w")
     pprint.PrettyPrinter(indent=4,stream=f).pprint(d_file)
     f.close()
