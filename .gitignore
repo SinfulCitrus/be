@@ -2,3 +2,5 @@
 *.pyc
 dictdump.txt
 .vscode/launch.json
+.idea
+venv

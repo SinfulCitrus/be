@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from .utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
-from .getInsight import parseAuthorCSVFile, getReviewScoreInfo, getAuthorInfo, getReviewInfo, getSubmissionInfo, \
+from .getInsight import getReviewScoreInfo, getAuthorInfo, getReviewInfo, getSubmissionInfo, \
     getMultipleFilesInfo
 
 
