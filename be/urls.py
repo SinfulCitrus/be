@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
 from rest_framework_swagger.views import get_swagger_view
-from polls.views import uploadCSV, getLastCSV
+from polls.views import uploadCSV, GetLastCSV
 from django.conf.urls import include
 
 schema_view = get_swagger_view(title='Pastebin API')
@@ -28,5 +28,5 @@ urlpatterns = [
     url(r'^upload/', uploadCSV, name='upload'),
     url(r'^users/', include('users.urls')),
     url(r'^users/auth/registration/', include('rest_auth.registration.urls')),
-    url(r'^getLastCSV', getLastCSV, name='getLastCSV')
+    url(r'^getLastCSV/', GetLastCSV.as_view(), name='getLastCSV')
 ]

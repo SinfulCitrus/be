@@ -1,12 +1,15 @@
-from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
 
 import json
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
 from .utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
 from .getInsight import getReviewScoreInfo, getAuthorInfo, getReviewInfo, getSubmissionInfo, getMultipleFilesInfo
+
 
 # Create your views here.
 # Note: a view is a func taking the HTTP request and returns sth accordingly
@@ -14,8 +17,10 @@ from .getInsight import getReviewScoreInfo, getAuthorInfo, getReviewInfo, getSub
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
+
 def test(request):
     return HttpResponse("<h1>This is the very first HTTP request!</h1>")
+
 
 # Note: csr: cross site request, adding this to enable request from localhost
 @csrf_exempt
@@ -40,7 +45,7 @@ def uploadCSV(request):
             rowContent = returnTestChartData(csvFile)
 
         if request.POST:
-    # current problem: request from axios not recognized as POST
+            # current problem: request from axios not recognized as POST
             # csvFile = request.FILES['file']
             print("Now we got the csv file")
 
@@ -55,7 +60,7 @@ def uploadCSV(request):
     elif len(request.FILES.getlist('file')) > 1:
         rowContent = ""
 
-        #print request.FILES.getlist('file')
+        # print request.FILES.getlist('file')
 
         rowContent = getMultipleFilesInfo(request.FILES.getlist('file'))
         res = HttpResponse(json.dumps(rowContent))
@@ -65,7 +70,8 @@ def uploadCSV(request):
         print("Not found the file!")
         return HttpResponseNotFound('Page not found for CSV')
 
-@csrf_exempt
-def getLastCSV(request):
 
-    return HttpResponse(request.user.last_csv)
+class GetLastCSV(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        return HttpResponse(request.user.last_csv)
