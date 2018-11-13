@@ -63,10 +63,38 @@ def parseCombinedFiles(parsedFiles):
         parsedResult['topCollaborators'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in topCollaborators], 'data': [ele[1] for ele in topCollaborators]}
 
     if 'author.csv' in parsedFiles and 'review.csv' in parsedFiles:
-        None
+
+        # most collaborators / authors vs review scores
+        for authorInfo in parsedFiles['author.csv']:
+            authorList.append({'collaborators': authorInfo[0]})
+
+        for reviewInfo in parsedFiles['review.csv']:
+            reviewList.append( {'submission': reviewInfo[1], 'score': reviewInfo[7]} )
+
+        collaborators = [ele['collaborators'] for ele in authorList if ele]
+        topCollaborators = Counter(collaborators).most_common(10)
+
+        sums = []
+        for sub in [ele[0] for ele in topCollaborators]:
+            sums.append(sum( [int(ele['score']) for ele in reviewList if ele['submission'] == sub] ) / len( [int(ele['score']) for ele in reviewList if ele['submission'] == sub] ))
+
+        parsedResult['reviewCollaborators'] = {'labels': [ele[0] for ele in topCollaborators], 'data': [ele for ele in sums]}
+        
 
     if 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
-        None
+
+        # least reviewed submissions
+        for reviewInfo in parsedFiles['review.csv']:
+            reviewList.append( {'submission': reviewInfo[1]} )
+        
+        for submissionInfo in parsedFiles['submission.csv']:
+            submissionList.append({'title': submissionInfo[3]})
+
+        reviewSub = [ele['submission'] for ele in reviewList if ele]
+        leastReviewSub = Counter(reviewSub).most_common()[:-11:-1] # format for least common n results = [:-n-1:-1]
+        parsedResult['leastCommonReviews'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in leastReviewSub if ele], 'data': [ele[1] for ele in leastReviewSub]}
+
+
 
     return {'infoType': 'combined', 'infoData': parsedResult}
 

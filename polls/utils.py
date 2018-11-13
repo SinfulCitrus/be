@@ -2,7 +2,6 @@ import csv
 import codecs
 import io
 
-
 def isNumber(inputStr):
     try:
         float(inputStr)
