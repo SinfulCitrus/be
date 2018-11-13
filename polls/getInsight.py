@@ -60,7 +60,7 @@ def parseCombinedFiles(parsedFiles):
 
         collaborators = [ele['collaborators'] for ele in authorList if ele]
         topCollaborators = Counter(collaborators).most_common(10)
-        parsedResult['topCollaborators'] = {'labels': [ele[0] for ele in topCollaborators], 'data': [submissionList[int(ele[0])] for ele in topCollaborators]}
+        parsedResult['topCollaborators'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in topCollaborators], 'data': [ele[1] for ele in topCollaborators]}
 
     if 'author.csv' in parsedFiles and 'review.csv' in parsedFiles:
         None

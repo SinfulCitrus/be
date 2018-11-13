@@ -47,7 +47,8 @@ def uploadCSV(request):
 			# csvFile = request.FILES['file']
 			print("Now we got the csv file")
 			
-		return HttpResponse(json.dumps(rowContent[0]))
+		res = HttpResponse(json.dumps(rowContent[0]))
+		return res
 		# return HttpResponse("Got the CSV file.")
 
 	# handling multiple files
@@ -57,7 +58,8 @@ def uploadCSV(request):
 		#print request.FILES.getlist('file')
 		
 		rowContent = getMultipleFilesInfo(request.FILES.getlist('file'))
-		return HttpResponse(json.dumps(rowContent))
+		res = HttpResponse(json.dumps(rowContent))
+		return res
 
 	else:
 		print("Not found the file!")
