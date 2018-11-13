@@ -1,5 +1,6 @@
 import csv
 import codecs
+import io
 
 
 def isNumber(inputStr):
@@ -21,13 +22,10 @@ def parseCSVFile(inputFile):
     """
 
     csvFile = inputFile
-    #dialect = csv.Sniffer().sniff(codecs.EncodedFile(csvFile, "utf-8").read(1024))
-    csvFile.open()
-    # reader = csv.reader(codecs.EncodedFile(csvFile, "utf-8"), delimiter=',', dialect=dialect)
-    #reader = csv.reader(codecs.EncodedFile(csvFile, "utf-8"), delimiter=',', dialect='excel')
+    csvFile.seek(0)
+    reader = csv.reader(io.StringIO(csvFile.read().decode('utf-8')),delimiter=',',dialect='excel')
 
-    rowResults = [row for row in csv.reader(line.decode() for line in csvFile)]
-    #rowResults = [row for row in reader]
+    rowResults = [row for row in reader]
 
     return rowResults
 

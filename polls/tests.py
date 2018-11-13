@@ -13,6 +13,6 @@ def ppdict(d_file):
     if not ddebug:
         return
     print("Dumping " + str(d_file.get('infoType')) + " to dictdump.txt")
-    f = open("dictdump.txt","w")
+    f = open("dictdump.txt","w",encoding="utf-8")
     pprint.PrettyPrinter(indent=4,stream=f).pprint(d_file)
     f.close()
