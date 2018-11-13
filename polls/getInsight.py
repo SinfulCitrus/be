@@ -42,33 +42,31 @@ def getMultipleFilesInfo(file_list):
     return dict_result
 
 def parseCombinedFiles(parsedFiles):
-
+    
     parsedResult = {}
+    authorList = []
+    submissionList = []
+    reviewList = []
 
-    # visualisations for different combinations of files
-    if 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles and 'review.csv' not in parsedFiles:
-        authorList = []
-        submissionList = []
-
-        # collaborators
+	# visualisations for different combinations of files
+    if 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles:
+		
+		# submissions with most collaborators / authors
         for authorInfo in parsedFiles['author.csv']:
             authorList.append({'collaborators': authorInfo[0]})
+
+        for submissionInfo in parsedFiles['submission.csv']:
+            submissionList.append({'title': submissionInfo[3]})
+
         collaborators = [ele['collaborators'] for ele in authorList if ele]
         topCollaborators = Counter(collaborators).most_common(10)
-        parsedResult['topCollaborators'] = {'labels': [ele[0] for ele in topCollaborators], 'data': [ele[1] for ele in topCollaborators]}
+        parsedResult['topCollaborators'] = {'labels': [ele[0] for ele in topCollaborators], 'data': [submissionList[int(ele[0])] for ele in topCollaborators]}
 
-    elif 'author.csv' in parsedFiles and 'submission.csv' not in parsedFiles and 'review.csv' in parsedFiles:
-        authorList = []
-        reviewList = []
+    if 'author.csv' in parsedFiles and 'review.csv' in parsedFiles:
+        None
 
-    elif 'author.csv' not in parsedFiles and 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
-        submissionList = []
-        reviewList = []
-
-    elif 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
-        authorList = []
-        submissionList = []
-        reviewList = []
+    if 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
+        None
 
     return {'infoType': 'combined', 'infoData': parsedResult}
 

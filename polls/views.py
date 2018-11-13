@@ -42,13 +42,11 @@ def uploadCSV(request):
 		else:
 			rowContent = returnTestChartData(csvFile)
 
-		print((type(csvFile.name)))
-
 		if request.POST:
 	# current problem: request from axios not recognized as POST
 			# csvFile = request.FILES['file']
 			print("Now we got the csv file")
-
+			
 		return HttpResponse(json.dumps(rowContent[0]))
 		# return HttpResponse("Got the CSV file.")
 
