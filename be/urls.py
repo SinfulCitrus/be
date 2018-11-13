@@ -27,6 +27,6 @@ urlpatterns = [
     url(r'^swagger/$', schema_view),
     url(r'^upload/', uploadCSV, name='upload'),
     url(r'^users/', include('users.urls')),
-    url(r'^users/auth/registration/', include('rest_auth.registration.urls'))
-
+    url(r'^users/auth/registration/', include('rest_auth.registration.urls')),
+    url(r'/getLastCSV', getLastCSV, name='getLastCSV')
 ]
