@@ -36,7 +36,18 @@ def getMultipleFilesInfo(file_list):
 
     parsedResult['combined'] = parseCombinedFiles(parsedFiles)
 
-    dict_result = {'infoType':u_files,'infoData':parsedResult}
+    name = ''
+    if 'author' in u_files and 'review' in u_files and 'submission' in u_files:
+        name = 'author_review_submission'
+    elif 'author' in u_files and 'review' in u_files and 'submission' not in u_files:
+        name = 'author_review'
+    elif 'author' in u_files and 'review' not in u_files and 'submission' in u_files:
+        name = 'author_submission'
+    elif 'author' not in u_files and 'review' in u_files and 'submission' in u_files:
+        name = 'review_submission'
+
+
+    dict_result = {'infoType':name,'infoData':parsedResult}
     ppdict(dict_result)
 
     return dict_result
@@ -44,12 +55,12 @@ def getMultipleFilesInfo(file_list):
 def parseCombinedFiles(parsedFiles):
     
     parsedResult = {}
-    authorList = []
-    submissionList = []
-    reviewList = []
-
+    
 	# visualisations for different combinations of files
     if 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles:
+        
+        authorList = []
+        submissionList = []
 		
 		# submissions with most collaborators / authors
         for authorInfo in parsedFiles['author.csv']:
@@ -63,6 +74,9 @@ def parseCombinedFiles(parsedFiles):
         parsedResult['topCollaborators'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in topCollaborators], 'data': [ele[1] for ele in topCollaborators]}
 
     if 'author.csv' in parsedFiles and 'review.csv' in parsedFiles:
+
+        authorList = []
+        reviewList = []
 
         # most collaborators / authors vs review scores
         for authorInfo in parsedFiles['author.csv']:
@@ -83,6 +97,9 @@ def parseCombinedFiles(parsedFiles):
 
     if 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
 
+        submissionList = []
+        reviewList = []
+
         # least reviewed submissions
         for reviewInfo in parsedFiles['review.csv']:
             reviewList.append( {'submission': reviewInfo[1]} )
@@ -93,7 +110,6 @@ def parseCombinedFiles(parsedFiles):
         reviewSub = [ele['submission'] for ele in reviewList if ele]
         leastReviewSub = Counter(reviewSub).most_common()[:-11:-1] # format for least common n results = [:-n-1:-1]
         parsedResult['leastCommonReviews'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in leastReviewSub if ele], 'data': [ele[1] for ele in leastReviewSub]}
-
 
 
     return {'infoType': 'combined', 'infoData': parsedResult}
