@@ -2,6 +2,12 @@ import csv
 import codecs
 import io
 
+def index_containing_sub(the_list, substring):
+    for i, s in enumerate(the_list):
+        if str(substring) in s['submission']:
+              return i
+    return -1
+
 def isNumber(inputStr):
     try:
         float(inputStr)
