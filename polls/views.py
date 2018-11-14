@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
 from django.http import HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
@@ -24,17 +25,7 @@ def test(request):
 
 # Note: csr: cross site request, adding this to enable request from localhost
 
-
-class GetLastCSV(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        return HttpResponse(request.user.last_csv)
-
-
 class Upload(APIView):
-    permission_classes = [AllowAny]
-
     def post(self, request):
         print("Inside the upload function")
         # handling a single file, original code
@@ -54,13 +45,13 @@ class Upload(APIView):
             else:
                 rowContent = returnTestChartData(csvFile)
 
-            res = HttpResponse(json.dumps(rowContent[0]))
+            res = json.dumps(rowContent[0])
 
-            # if request.user != 'AnonymousUser':
-            #     request.user.last_csv = res
-            #     request.user.save()
+            if not isinstance(request.user, AnonymousUser):
+                request.user.last_csv = res
+                request.user.save()
 
-            return res
+            return HttpResponse(res)
 
         # handling multiple files
         elif len(request.FILES.getlist('file')) > 1:
@@ -73,3 +64,10 @@ class Upload(APIView):
         else:
             print("Not found the file!")
         return HttpResponseNotFound('Page not found for CSV')
+
+
+class GetLastCSV(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        return HttpResponse(request.user.last_csv)
