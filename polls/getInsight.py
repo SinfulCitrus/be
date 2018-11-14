@@ -3,7 +3,8 @@ import codecs
 from collections import Counter
 
 from .tests import ppdict
-from .utils import parseCSVFile, testCSVFileFormatMatching, isNumber, parseSubmissionTime
+from .utils import parseCSVFile, testCSVFileFormatMatching, isNumber, parseSubmissionTime, index_containing_sub
+
 
 
 def getMultipleFilesInfo(file_list):
@@ -62,18 +63,48 @@ def parseCombinedFiles(parsedFiles):
         authorList = []
         submissionList = []
 
-        # submissions with most collaborators / authors
         for authorInfo in parsedFiles['author.csv']:
-            authorList.append({'collaborators': authorInfo[0]})
+            authorList.append({'collaborators': authorInfo[0], 'organisations': authorInfo[5]})
 
         for submissionInfo in parsedFiles['submission.csv']:
-            submissionList.append({'title': submissionInfo[3]})
+            submissionList.append({'submission': submissionInfo[0], 'title': submissionInfo[3], 'acc/rej': submissionInfo[9]})
 
+        # submissions with most collaborators / authors
         collaborators = [ele['collaborators'] for ele in authorList if ele]
         topCollaborators = Counter(collaborators).most_common(10)
         parsedResult['topCollaborators'] = {
             'labels': [submissionList[int(ele[0])]['title'] for ele in topCollaborators],
             'data': [ele[1] for ele in topCollaborators]}
+
+        # organisations with most submission with highest accepted : rejected ratios
+        organisations = []
+        for i, ele in enumerate(authorList):
+            organisations.append([i,ele['organisations']])
+
+        topOrganisations = Counter([ele[1] for ele in organisations]).most_common(10)
+        indOrg = {}
+        for org in topOrganisations:
+            indOrg[org[0]] = [ele[0] for ele in organisations if ele[1] == org[0]]
+
+        orgRatios = []
+        for ele in [*indOrg]:
+            acc = 0
+            rej = 0
+            for inx in indOrg[ele]:
+                if submissionList[index_containing_sub(submissionList,inx)]['acc/rej'] == 'reject':
+                    rej+=1
+                else:
+                    acc+=1
+            orgRatios.append([ele,acc,rej])
+
+        orgRatiosAdj = []
+        for ele in orgRatios:
+            if int(ele[2]) is not 0:
+                orgRatiosAdj.append([ele[0],ele[1]/ele[2]])
+            else:
+                orgRatiosAdj.append([ele[0],ele[1]])
+
+        parsedResult['topAcceptReject'] = {'labels': [ele[0] for ele in orgRatiosAdj], 'data': [ele[1] for ele in orgRatiosAdj]}
 
     if 'author.csv' in parsedFiles and 'review.csv' in parsedFiles:
 
@@ -217,6 +248,8 @@ def getReviewInfo(inputFile):
     evaluation = [str(line[6]).replace("\r", "") for line in lines]
     submissionIDs = set([str(line[1]) for line in lines])
 
+    topReviewers = Counter([ele[3] for ele in lines if ele]).most_common(10)
+
     scoreList = []
     recommendList = []
     confidenceList = []
@@ -259,6 +292,7 @@ def getReviewInfo(inputFile):
         scoreList.append(weightedScore)
         recommendList.append(weightedRecommend)
 
+    parsedResult['topReviewers'] = {'labels': [ele[0] for ele in topReviewers], 'data': [ele[1] for ele in topReviewers]}
     parsedResult['IDReviewMap'] = submissionIDReviewMap
     parsedResult['scoreList'] = scoreList
     parsedResult['meanScore'] = sum(scoreList) / len(scoreList)
@@ -289,6 +323,8 @@ def getSubmissionInfo(inputFile):
     rejectedSubmission = [line for line in lines if str(line[9]) == 'reject']
 
     acceptanceRate = float(len(acceptedSubmission)) / len(lines)
+
+    informedRate = sum([1 for ele in lines if ele[10] == 'yes'])/len(lines)
 
     submissionTimes = [parseSubmissionTime(str(ele[5])) for ele in lines]
     lastEditTimes = [parseSubmissionTime(str(ele[6])) for ele in lines]
@@ -372,6 +408,7 @@ def getSubmissionInfo(inputFile):
                              'counts': [ele[1] for ele in topAcceptedAuthors]}
     # topAcceptedAuthors = {ele[0] : ele[1] for ele in Counter(acceptedAuthors).most_common(10)}
 
+    parsedResult['informedRate'] = informedRate
     parsedResult['acceptanceRate'] = acceptanceRate
     parsedResult['overallKeywordMap'] = allKeywordMap
     parsedResult['overallKeywordList'] = allKeywordList
