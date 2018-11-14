@@ -37,7 +37,7 @@ def getMultipleFilesInfo(file_list):
 
     parsedResult['combined'] = parseCombinedFiles(parsedFiles)
 
-    name = 'undefined'
+    name = ''
     if 'author' in u_files and 'review' in u_files and 'submission' in u_files:
         name = 'author_review_submission'
     elif 'author' in u_files and 'review' in u_files and 'submission' not in u_files:
@@ -61,19 +61,14 @@ def parseCombinedFiles(parsedFiles):
 
         authorList = []
         submissionList = []
-<<<<<<< HEAD
-		
-=======
 
-        # submissions with most collaborators / authors
->>>>>>> dba0c9764bccdd1d3a008e275668447067577798
         for authorInfo in parsedFiles['author.csv']:
             authorList.append({'collaborators': authorInfo[0], 'organisations': authorInfo[5]})
 
         for submissionInfo in parsedFiles['submission.csv']:
             submissionList.append({'submission': submissionInfo[0], 'title': submissionInfo[3], 'acc/rej': submissionInfo[9]})
 
-		# submissions with most collaborators / authors
+        # submissions with most collaborators / authors
         collaborators = [ele['collaborators'] for ele in authorList if ele]
         topCollaborators = Counter(collaborators).most_common(10)
         parsedResult['topCollaborators'] = {
@@ -296,10 +291,7 @@ def getReviewInfo(inputFile):
         scoreList.append(weightedScore)
         recommendList.append(weightedRecommend)
 
-<<<<<<< HEAD
     parsedResult['topReviewers'] = {'labels': [ele[0] for ele in topReviewers], 'data': [ele[1] for ele in topReviewers]}
-=======
->>>>>>> dba0c9764bccdd1d3a008e275668447067577798
     parsedResult['IDReviewMap'] = submissionIDReviewMap
     parsedResult['scoreList'] = scoreList
     parsedResult['meanScore'] = sum(scoreList) / len(scoreList)
