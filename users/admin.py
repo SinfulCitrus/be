@@ -1,6 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.forms import UserChangeForm
+from users.models import User
 
-from .models import *
-
+admin.site.register(User)
