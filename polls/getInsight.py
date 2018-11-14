@@ -36,7 +36,18 @@ def getMultipleFilesInfo(file_list):
             print("Files dont match a known format.")
             return None
 
-    parsedResult['combined'] = parseCombinedFiles(parsedFiles)
+    parseCombined = parseCombinedFiles(parsedFiles)
+
+    parseAll = []
+    parseR = []
+    for ele in [*parsedResult]:
+        parseR.append(parsedResult[ele])
+
+    for ele in parseR:
+        parseAll.append(ele['infoData'])
+
+    for ele in [*parseCombined]:
+        parseAll.append(parseCombined[ele])
 
     name = ''
     if 'author' in u_files and 'review' in u_files and 'submission' in u_files:
@@ -48,7 +59,7 @@ def getMultipleFilesInfo(file_list):
     elif 'author' not in u_files and 'review' in u_files and 'submission' in u_files:
         name = 'review_submission'
 
-    dict_result = {'infoType': name, 'infoData': parsedResult}
+    dict_result = {'infoType': name, 'infoData': [ele for ele in parseAll]}
     ppdict(dict_result)
 
     return dict_result
@@ -147,7 +158,7 @@ def parseCombinedFiles(parsedFiles):
             'labels': [submissionList[int(ele[0])]['title'] for ele in leastReviewSub if ele],
             'data': [ele[1] for ele in leastReviewSub]}
 
-    return {'infoType': 'combined', 'infoData': parsedResult}
+    return parsedResult
 
 
 def getAuthorInfo(inputFile):
