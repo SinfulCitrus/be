@@ -38,16 +38,16 @@ def getMultipleFilesInfo(file_list):
 
     parseCombined = parseCombinedFiles(parsedFiles)
 
-    parseAll = []
-    parseR = []
-    for ele in [*parsedResult]:
-        parseR.append(parsedResult[ele])
+    # parseAll = []
+    # parseR = []
+    # for ele in [*parsedResult]:
+    #     parseR.append(parsedResult[ele])
 
-    for ele in parseR:
-        parseAll.append(ele['infoData'])
+    # for ele in parseR:
+    #     parseAll.append(ele['infoData'])
 
-    for ele in [*parseCombined]:
-        parseAll.append(parseCombined[ele])
+    # for ele in [*parseCombined]:
+    #     parseAll.append(parseCombined[ele])
 
     name = ''
     if 'author' in u_files and 'review' in u_files and 'submission' in u_files:
@@ -59,7 +59,7 @@ def getMultipleFilesInfo(file_list):
     elif 'author' not in u_files and 'review' in u_files and 'submission' in u_files:
         name = 'review_submission'
 
-    dict_result = {'infoType': name, 'infoData': [ele for ele in parseAll]}
+    dict_result = {'infoType': name, 'infoData': parseCombined}
     ppdict(dict_result)
 
     return dict_result
