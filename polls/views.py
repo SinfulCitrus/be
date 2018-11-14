@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import json
 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 
 from .utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
@@ -23,55 +23,53 @@ def test(request):
 
 
 # Note: csr: cross site request, adding this to enable request from localhost
-@csrf_exempt
-def uploadCSV(request):
-    print("Inside the upload function")
-
-    # handling a single file, original code
-    if len(request.FILES.getlist('file')) == 1:
-        csvFile = request.FILES['file']
-        fileName = str(csvFile.name)
-        rowContent = ""
-
-        if "author.csv" in fileName:
-            rowContent = getAuthorInfo(csvFile)
-        elif "score.csv" in fileName:
-            rowContent = getReviewScoreInfo(csvFile)
-        elif "review.csv" in fileName:
-            rowContent = getReviewInfo(csvFile)
-        elif "submission.csv" in fileName:
-            rowContent = getSubmissionInfo(csvFile)
-        else:
-            rowContent = returnTestChartData(csvFile)
-
-        if request.POST:
-            # current problem: request from axios not recognized as POST
-            # csvFile = request.FILES['file']
-            print("Now we got the csv file")
-
-        res = HttpResponse(json.dumps(rowContent[0]))
-        request.user.last_csv = res
-        request.user.save()
-
-        return res
-        # return HttpResponse("Got the CSV file.")
-
-    # handling multiple files
-    elif len(request.FILES.getlist('file')) > 1:
-        rowContent = ""
-
-        # print request.FILES.getlist('file')
-
-        rowContent = getMultipleFilesInfo(request.FILES.getlist('file'))
-        res = HttpResponse(json.dumps(rowContent))
-        return res
-
-    else:
-        print("Not found the file!")
-        return HttpResponseNotFound('Page not found for CSV')
 
 
 class GetLastCSV(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
         return HttpResponse(request.user.last_csv)
+
+
+class Upload(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        print("Inside the upload function")
+        # handling a single file, original code
+        if len(request.FILES.getlist('file')) == 1:
+            csvFile = request.FILES['file']
+            fileName = str(csvFile.name)
+            rowContent = ""
+
+            if "author.csv" in fileName:
+                rowContent = getAuthorInfo(csvFile)
+            elif "score.csv" in fileName:
+                rowContent = getReviewScoreInfo(csvFile)
+            elif "review.csv" in fileName:
+                rowContent = getReviewInfo(csvFile)
+            elif "submission.csv" in fileName:
+                rowContent = getSubmissionInfo(csvFile)
+            else:
+                rowContent = returnTestChartData(csvFile)
+
+            res = HttpResponse(json.dumps(rowContent[0]))
+
+            # if request.user != 'AnonymousUser':
+            #     request.user.last_csv = res
+            #     request.user.save()
+
+            return res
+
+        # handling multiple files
+        elif len(request.FILES.getlist('file')) > 1:
+            rowContent = ""
+            # print request.FILES.getlist('file')
+            rowContent = getMultipleFilesInfo(request.FILES.getlist('file'))
+            res = HttpResponse(json.dumps(rowContent))
+            return res
+
+        else:
+            print("Not found the file!")
+        return HttpResponseNotFound('Page not found for CSV')

@@ -3,7 +3,8 @@ import codecs
 from collections import Counter
 
 from .tests import ppdict
-from .utils import parseCSVFile, testCSVFileFormatMatching, isNumber, parseSubmissionTime
+from .utils import parseCSVFile, testCSVFileFormatMatching, isNumber, parseSubmissionTime, index_containing_sub
+
 
 def getMultipleFilesInfo(file_list):
     """
@@ -11,7 +12,7 @@ def getMultipleFilesInfo(file_list):
     """
     parsedResult = {}
     parsedFiles = {}
-    u_files = [] # list of uploaded files
+    u_files = []  # list of uploaded files
 
     for f_csv in file_list:
         if str(f_csv.name) == 'author.csv':
@@ -36,7 +37,7 @@ def getMultipleFilesInfo(file_list):
 
     parsedResult['combined'] = parseCombinedFiles(parsedFiles)
 
-    name = ''
+    name = 'undefined'
     if 'author' in u_files and 'review' in u_files and 'submission' in u_files:
         name = 'author_review_submission'
     elif 'author' in u_files and 'review' in u_files and 'submission' not in u_files:
@@ -46,32 +47,68 @@ def getMultipleFilesInfo(file_list):
     elif 'author' not in u_files and 'review' in u_files and 'submission' in u_files:
         name = 'review_submission'
 
-
-    dict_result = {'infoType':name,'infoData':parsedResult}
+    dict_result = {'infoType': name, 'infoData': parsedResult}
     ppdict(dict_result)
 
     return dict_result
 
+
 def parseCombinedFiles(parsedFiles):
-    
     parsedResult = {}
-    
-	# visualisations for different combinations of files
+
+    # visualisations for different combinations of files
     if 'author.csv' in parsedFiles and 'submission.csv' in parsedFiles:
-        
+
         authorList = []
         submissionList = []
+<<<<<<< HEAD
 		
-		# submissions with most collaborators / authors
+=======
+
+        # submissions with most collaborators / authors
+>>>>>>> dba0c9764bccdd1d3a008e275668447067577798
         for authorInfo in parsedFiles['author.csv']:
-            authorList.append({'collaborators': authorInfo[0]})
+            authorList.append({'collaborators': authorInfo[0], 'organisations': authorInfo[5]})
 
         for submissionInfo in parsedFiles['submission.csv']:
-            submissionList.append({'title': submissionInfo[3]})
+            submissionList.append({'submission': submissionInfo[0], 'title': submissionInfo[3], 'acc/rej': submissionInfo[9]})
 
+		# submissions with most collaborators / authors
         collaborators = [ele['collaborators'] for ele in authorList if ele]
         topCollaborators = Counter(collaborators).most_common(10)
-        parsedResult['topCollaborators'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in topCollaborators], 'data': [ele[1] for ele in topCollaborators]}
+        parsedResult['topCollaborators'] = {
+            'labels': [submissionList[int(ele[0])]['title'] for ele in topCollaborators],
+            'data': [ele[1] for ele in topCollaborators]}
+
+        # organisations with most submission with highest accepted : rejected ratios
+        organisations = []
+        for i, ele in enumerate(authorList):
+            organisations.append([i,ele['organisations']])
+
+        topOrganisations = Counter([ele[1] for ele in organisations]).most_common(10)
+        indOrg = {}
+        for org in topOrganisations:
+            indOrg[org[0]] = [ele[0] for ele in organisations if ele[1] == org[0]]
+
+        orgRatios = []
+        for ele in [*indOrg]:
+            acc = 0
+            rej = 0
+            for inx in indOrg[ele]:
+                if submissionList[index_containing_sub(submissionList,inx)]['acc/rej'] == 'reject':
+                    rej+=1
+                else:
+                    acc+=1
+            orgRatios.append([ele,acc,rej])
+
+        orgRatiosAdj = []
+        for ele in orgRatios:
+            if int(ele[2]) is not 0:
+                orgRatiosAdj.append([ele[0],ele[1]/ele[2]])
+            else:
+                orgRatiosAdj.append([ele[0],ele[1]])
+
+        parsedResult['topAcceptReject'] = {'labels': [ele[0] for ele in orgRatiosAdj], 'data': [ele[1] for ele in orgRatiosAdj]}
 
     if 'author.csv' in parsedFiles and 'review.csv' in parsedFiles:
 
@@ -83,17 +120,18 @@ def parseCombinedFiles(parsedFiles):
             authorList.append({'collaborators': authorInfo[0]})
 
         for reviewInfo in parsedFiles['review.csv']:
-            reviewList.append( {'submission': reviewInfo[1], 'score': reviewInfo[7]} )
+            reviewList.append({'submission': reviewInfo[1], 'score': reviewInfo[7]})
 
         collaborators = [ele['collaborators'] for ele in authorList if ele]
         topCollaborators = Counter(collaborators).most_common(10)
 
         sums = []
         for sub in [ele[0] for ele in topCollaborators]:
-            sums.append(sum( [int(ele['score']) for ele in reviewList if ele['submission'] == sub] ) / len( [int(ele['score']) for ele in reviewList if ele['submission'] == sub] ))
+            sums.append(sum([int(ele['score']) for ele in reviewList if ele['submission'] == sub]) / len(
+                [int(ele['score']) for ele in reviewList if ele['submission'] == sub]))
 
-        parsedResult['reviewCollaborators'] = {'labels': [ele[0] for ele in topCollaborators], 'data': [ele for ele in sums]}
-        
+        parsedResult['reviewCollaborators'] = {'labels': [ele[0] for ele in topCollaborators],
+                                               'data': [ele for ele in sums]}
 
     if 'submission.csv' in parsedFiles and 'review.csv' in parsedFiles:
 
@@ -102,17 +140,19 @@ def parseCombinedFiles(parsedFiles):
 
         # least reviewed submissions
         for reviewInfo in parsedFiles['review.csv']:
-            reviewList.append( {'submission': reviewInfo[1]} )
-        
+            reviewList.append({'submission': reviewInfo[1]})
+
         for submissionInfo in parsedFiles['submission.csv']:
             submissionList.append({'title': submissionInfo[3]})
 
         reviewSub = [ele['submission'] for ele in reviewList if ele]
-        leastReviewSub = Counter(reviewSub).most_common()[:-11:-1] # format for least common n results = [:-n-1:-1]
-        parsedResult['leastCommonReviews'] = {'labels': [submissionList[int(ele[0])]['title'] for ele in leastReviewSub if ele], 'data': [ele[1] for ele in leastReviewSub]}
-
+        leastReviewSub = Counter(reviewSub).most_common()[:-11:-1]  # format for least common n results = [:-n-1:-1]
+        parsedResult['leastCommonReviews'] = {
+            'labels': [submissionList[int(ele[0])]['title'] for ele in leastReviewSub if ele],
+            'data': [ele[1] for ele in leastReviewSub]}
 
     return {'infoType': 'combined', 'infoData': parsedResult}
+
 
 def getAuthorInfo(inputFile):
     """
@@ -129,22 +169,26 @@ def getAuthorInfo(inputFile):
     for authorInfo in lines:
         # authorInfo = line.replace("\"", "").split(",")
         # print authorInfo
-        authorList.append({'name': authorInfo[1] + " " + authorInfo[2], 'country': authorInfo[4], 'affiliation': authorInfo[5]})
+        authorList.append(
+            {'name': authorInfo[1] + " " + authorInfo[2], 'country': authorInfo[4], 'affiliation': authorInfo[5]})
 
-    authors = [ele['name'] for ele in authorList if ele] # adding in the if ele in case of empty strings; same applies below
+    authors = [ele['name'] for ele in authorList if
+               ele]  # adding in the if ele in case of empty strings; same applies below
     topAuthors = Counter(authors).most_common(10)
     parsedResult['topAuthors'] = {'labels': [ele[0] for ele in topAuthors], 'data': [ele[1] for ele in topAuthors]}
 
     countries = [ele['country'] for ele in authorList if ele]
     topCountries = Counter(countries).most_common(10)
-    parsedResult['topCountries'] = {'labels': [ele[0] for ele in topCountries], 'data': [ele[1] for ele in topCountries]}
+    parsedResult['topCountries'] = {'labels': [ele[0] for ele in topCountries],
+                                    'data': [ele[1] for ele in topCountries]}
 
     countries_set = set(countries)
     parsedResult['avgCountry'] = len(authorList) / len(countries_set)
 
     affiliations = [ele['affiliation'] for ele in authorList if ele]
     topAffiliations = Counter(affiliations).most_common(10)
-    parsedResult['topAffiliations'] = {'labels': [ele[0] for ele in topAffiliations], 'data': [ele[1] for ele in topAffiliations]}
+    parsedResult['topAffiliations'] = {'labels': [ele[0] for ele in topAffiliations],
+                                       'data': [ele[1] for ele in topAffiliations]}
 
     affil_set = set(affiliations)
     parsedResult['avgAffiliation'] = len(authorList) / len(affil_set)
@@ -153,6 +197,7 @@ def getAuthorInfo(inputFile):
     ppdict(dict_result)
 
     return dict_result, lines
+
 
 def getReviewScoreInfo(inputFile):
     """
@@ -186,6 +231,7 @@ def getReviewScoreInfo(inputFile):
 
     return dict_result, lines
 
+
 def getReviewInfo(inputFile):
     """
     review.csv
@@ -205,6 +251,8 @@ def getReviewInfo(inputFile):
     lines = [ele for ele in lines if ele]
     evaluation = [str(line[6]).replace("\r", "") for line in lines]
     submissionIDs = set([str(line[1]) for line in lines])
+
+    topReviewers = Counter([ele[3] for ele in lines if ele]).most_common(10)
 
     scoreList = []
     recommendList = []
@@ -248,7 +296,10 @@ def getReviewInfo(inputFile):
         scoreList.append(weightedScore)
         recommendList.append(weightedRecommend)
 
-
+<<<<<<< HEAD
+    parsedResult['topReviewers'] = {'labels': [ele[0] for ele in topReviewers], 'data': [ele[1] for ele in topReviewers]}
+=======
+>>>>>>> dba0c9764bccdd1d3a008e275668447067577798
     parsedResult['IDReviewMap'] = submissionIDReviewMap
     parsedResult['scoreList'] = scoreList
     parsedResult['meanScore'] = sum(scoreList) / len(scoreList)
@@ -256,12 +307,14 @@ def getReviewInfo(inputFile):
     parsedResult['meanConfidence'] = sum(confidenceList) / len(confidenceList)
     parsedResult['recommendList'] = recommendList
     parsedResult['scoreDistribution'] = {'labels': scoreDistributionLabels, 'counts': scoreDistributionCounts}
-    parsedResult['recommendDistribution'] = {'labels': recommendDistributionLabels, 'counts': recommendDistributionCounts}
+    parsedResult['recommendDistribution'] = {'labels': recommendDistributionLabels,
+                                             'counts': recommendDistributionCounts}
 
     dict_result = {'infoType': 'review', 'infoData': parsedResult}
     ppdict(dict_result)
 
     return dict_result, lines
+
 
 def getSubmissionInfo(inputFile):
     """
@@ -277,6 +330,8 @@ def getSubmissionInfo(inputFile):
     rejectedSubmission = [line for line in lines if str(line[9]) == 'reject']
 
     acceptanceRate = float(len(acceptedSubmission)) / len(lines)
+
+    informedRate = sum([1 for ele in lines if ele[10] == 'yes'])/len(lines)
 
     submissionTimes = [parseSubmissionTime(str(ele[5])) for ele in lines]
     lastEditTimes = [parseSubmissionTime(str(ele[6])) for ele in lines]
@@ -309,21 +364,21 @@ def getSubmissionInfo(inputFile):
 
     acceptedKeywords = [str(ele[8]).lower().replace("\r", "").split("\n") for ele in acceptedSubmission]
     acceptedKeywords = [ele for item in acceptedKeywords for ele in item]
-    acceptedKeywordMap = {k : v for k, v in Counter(acceptedKeywords).items()}
+    acceptedKeywordMap = {k: v for k, v in Counter(acceptedKeywords).items()}
     acceptedKeywordList = [[ele[0], ele[1]] for ele in Counter(acceptedKeywords).most_common(20)]
 
     rejectedKeywords = [str(ele[8]).lower().replace("\r", "").split("\n") for ele in rejectedSubmission]
     rejectedKeywords = [ele for item in rejectedKeywords for ele in item]
-    rejectedKeywordMap = {k : v for k, v in Counter(rejectedKeywords).items()}
+    rejectedKeywordMap = {k: v for k, v in Counter(rejectedKeywords).items()}
     rejectedKeywordList = [[ele[0], ele[1]] for ele in Counter(rejectedKeywords).most_common(20)]
 
     allKeywords = [str(ele[8]).lower().replace("\r", "").split("\n") for ele in lines]
     allKeywords = [ele for item in allKeywords for ele in item]
-    allKeywordMap = {k : v for k, v in Counter(allKeywords).items()}
+    allKeywordMap = {k: v for k, v in Counter(allKeywords).items()}
     allKeywordList = [[ele[0], ele[1]] for ele in Counter(allKeywords).most_common(20)]
 
     tracks = set([str(ele[2]) for ele in lines])
-    paperGroupsByTrack = {track : [line for line in lines if str(line[2]) == track] for track in tracks}
+    paperGroupsByTrack = {track: [line for line in lines if str(line[2]) == track] for track in tracks}
     keywordsGroupByTrack = {}
     acceptanceRateByTrack = {}
     comparableAcceptanceRate = {}
@@ -347,7 +402,8 @@ def getSubmissionInfo(inputFile):
         acceptedAuthorsThisTrack = [str(ele[4]).replace(" and ", ", ").split(", ") for ele in acceptedPapersThisTrack]
         acceptedAuthorsThisTrack = [ele for item in acceptedAuthorsThisTrack for ele in item]
         topAcceptedAuthorsThisTrack = Counter(acceptedAuthorsThisTrack).most_common(10)
-        topAuthorsByTrack[track] = {'names': [ele[0] for ele in topAcceptedAuthorsThisTrack], 'counts': [ele[1] for ele in topAcceptedAuthorsThisTrack]}
+        topAuthorsByTrack[track] = {'names': [ele[0] for ele in topAcceptedAuthorsThisTrack],
+                                    'counts': [ele[1] for ele in topAcceptedAuthorsThisTrack]}
 
         if track == "Full Papers" or track == "Short Papers":
             comparableAcceptanceRate[track].append(float(len(acceptedPapersPerTrack)) / len(papers))
@@ -355,9 +411,11 @@ def getSubmissionInfo(inputFile):
     acceptedAuthors = [str(ele[4]).replace(" and ", ", ").split(", ") for ele in acceptedSubmission]
     acceptedAuthors = [ele for item in acceptedAuthors for ele in item]
     topAcceptedAuthors = Counter(acceptedAuthors).most_common(10)
-    topAcceptedAuthorsMap = {'names': [ele[0] for ele in topAcceptedAuthors], 'counts': [ele[1] for ele in topAcceptedAuthors]}
+    topAcceptedAuthorsMap = {'names': [ele[0] for ele in topAcceptedAuthors],
+                             'counts': [ele[1] for ele in topAcceptedAuthors]}
     # topAcceptedAuthors = {ele[0] : ele[1] for ele in Counter(acceptedAuthors).most_common(10)}
 
+    parsedResult['informedRate'] = informedRate
     parsedResult['acceptanceRate'] = acceptanceRate
     parsedResult['overallKeywordMap'] = allKeywordMap
     parsedResult['overallKeywordList'] = allKeywordList
@@ -378,6 +436,7 @@ def getSubmissionInfo(inputFile):
 
     return dict_result, lines
 
+
 if __name__ == "__main__":
-    #parseCSVFile(fileName)
+    # parseCSVFile(fileName)
     print("getInsight.main")
