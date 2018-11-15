@@ -59,6 +59,9 @@ class Upload(APIView):
             # print request.FILES.getlist('file')
             rowContent = getMultipleFilesInfo(request.FILES.getlist('file'))
             res = HttpResponse(json.dumps(rowContent))
+            if not isinstance(request.user, AnonymousUser):
+                request.user.last_csv = json.dumps(rowContent)
+                request.user.save()
             return res
 
         else:
